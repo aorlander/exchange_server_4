@@ -125,16 +125,6 @@ def trade():
         #Note that you can access the database session using g.session
 
         # TODO: Check the signature
-        #s_pk = content['payload']['sender_pk'] 
-        #r_pk = content['payload']['receiver_pk'] 
-        #buy_ccy = content['payload']['buy_currency'] 
-        #sell_ccy = content['payload']['sell_currency'] 
-        #buy_amt = content['payload']['buy_amount'] 
-        #sell_amt = content['payload']['sell_amount'] 
-        #platform = content['payload']['platform']
-        #payload = content['payload']
-        #sig = content['sig']
-        
         response = check_sig(json.dumps(content['payload']), content['sig'])
 
         # TODO: Add the order to the database and Fill the order
@@ -149,11 +139,11 @@ def trade():
             g.session.add(order)
             g.session.commit()
             fill_order(order, g.session.query(Order).all())
-            #return jsonify(True)
+            return jsonify(True)
 
         if response == False:
             leg_message(payload)
-            #return jsonify(False)
+            return jsonify(False)
 
         # TODO: Be sure to return jsonify(True) or jsonify(False) depending on if the method was successful
         return jsonify(True)
