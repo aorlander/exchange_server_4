@@ -134,15 +134,14 @@ def trade():
                           buy_currency=content['payload']['buy_currency'], 
                           sell_currency=content['payload']['sell_currency'], 
                           buy_amount=content['payload']['buy_amount'], 
-                          sell_amount=content['payload']['sell_amount']
-                         )
+                          sell_amount=content['payload']['sell_amount'])
             g.session.add(order)
             g.session.commit()
             fill_order(order, g.session.query(Order).all())
             return jsonify(True)
 
         if response == False:
-            leg_message(payload)
+            leg_message(json.dumps(content['payload']))
             return jsonify(False)
 
         # TODO: Be sure to return jsonify(True) or jsonify(False) depending on if the method was successful
