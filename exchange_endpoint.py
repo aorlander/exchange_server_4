@@ -32,16 +32,15 @@ def shutdown_session(response_or_exc):
 """ Suggested helper methods """
 
 def check_sig(payload,sig):
-    payload_d = json.dumps(payload)
     s_pk = payload['sender_pk'] 
     platform = payload['platform']
     response = False
     if platform=='Ethereum':
-            eth_encoded_msg = eth_account.messages.encode_defunct(text=payload_d)
+            eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
             if eth_account.Account.recover_message(eth_encoded_msg,signature=sig) == s_pk:
                 response = True
         if platform=='Algorand':
-            if algosdk.util.verify_bytes(payload_d.encode('utf-8'),sig,s_pk):
+            if algosdk.util.verify_bytes(payload.encode('utf-8'),sig,s_pk):
                 response = True
     return jsonify(True)
 
@@ -126,29 +125,38 @@ def trade():
         #Note that you can access the database session using g.session
 
         # TODO: Check the signature
-        s_pk = content['payload']['sender_pk'] 
-        r_pk = content['payload']['receiver_pk'] 
-        buy_ccy = content['payload']['buy_currency'] 
-        sell_ccy = content['payload']['sell_currency'] 
-        buy_amt = content['payload']['buy_amount'] 
-        sell_amt = content['payload']['sell_amount'] 
-        platform = content['payload']['platform']
+        #s_pk = content['payload']['sender_pk'] 
+        #r_pk = content['payload']['receiver_pk'] 
+        #buy_ccy = content['payload']['buy_currency'] 
+        #sell_ccy = content['payload']['sell_currency'] 
+        #buy_amt = content['payload']['buy_amount'] 
+        #sell_amt = content['payload']['sell_amount'] 
+        #platform = content['payload']['platform']
+        #payload = content['payload']
+        #sig = content['sig']
         
-        payload = content['payload']
-        sig = content['sig']
-        response = check_sig(payload, sig)
+        response = check_sig(json.dumps(content['payload']), content['sig'])
 
         # TODO: Add the order to the database and Fill the order
         if response == True:
-            order = Order( sender_pk=s_pk, receiver_pk=r_pk, buy_currency=buy_ccy, sell_currency=sell_ccy, buy_amount=buy_amt, sell_amount=sell_amt)
+            order = Order(sender_pk=content['payload']['sender_pk'] , 
+                          receiver_pk=content['payload']['receiver_pk'], 
+                          buy_currency=content['payload']['buy_currency'], 
+                          sell_currency=content['payload']['sell_currency'], 
+                          buy_amount=content['payload']['buy_amount'], 
+                          sell_amount=content['payload']['sell_amount']
+                         )
             g.session.add(order)
             g.session.commit()
             fill_order(order, g.session.query(Order).all())
+            return(jsonify(True))
+            
         if response == False:
             leg_message(payload)
+            return(jsonify(False))
 
         # TODO: Be sure to return jsonify(True) or jsonify(False) depending on if the method was successful
-        return(jsonify(response))
+        return(jsonify(True))
 
 @app.route('/order_book')
 def order_book():
