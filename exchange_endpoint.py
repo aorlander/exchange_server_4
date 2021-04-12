@@ -42,7 +42,7 @@ def check_sig(payload,sig):
         if platform=='Algorand':
             if algosdk.util.verify_bytes(payload.encode('utf-8'),sig,s_pk):
                 response = True
-    return jsonify(True)
+    return response
 
 def check_match(existing_order, order):
     if(order.filled==None):
