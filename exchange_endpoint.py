@@ -28,9 +28,6 @@ def shutdown_session(response_or_exc):
     g.session.commit()
     g.session.remove()
 
-
-""" Suggested helper methods """
-
 def check_sig(payload,sig):
     s_pk = payload['sender_pk'] 
     platform = payload['platform']
@@ -121,13 +118,11 @@ def trade():
                 log_message(content)
                 return jsonify( False )
             
-        #Your code here
-        #Note that you can access the database session using g.session
-
-        # TODO: Check the signature
+        # Check the signature
         response = check_sig(content['payload'], content['sig'])
-        print(response)
-        # TODO: Add the order to the database and Fill the order
+
+        # Add the order to the database and Fill the order
+        # Return jsonify(True) or jsonify(False) depending on if the method was successful
         if response == True:
             order = Order(sender_pk=content['payload']['sender_pk'] , 
                           receiver_pk=content['payload']['receiver_pk'], 
@@ -139,12 +134,10 @@ def trade():
             g.session.commit()
             fill_order(order, g.session.query(Order).all())
             return jsonify(True)
-
         if response == False:
             leg_message(json.dumps(content['payload']))
             return jsonify(False)
-
-        # TODO: Be sure to return jsonify(True) or jsonify(False) depending on if the method was successful
+        
         return jsonify(True)
 
 @app.route('/order_book')
@@ -156,7 +149,6 @@ def order_book():
             "buy_currency": order.buy_currency, "sell_currency": order.sell_currency, 
             "buy_amount": order.buy_amount, "sell_amount": order.sell_amount, "signature": order.signature}
         list_orders.append(o)
-
     return jsonify(data=list_orders)
 
 if __name__ == '__main__':
