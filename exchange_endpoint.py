@@ -149,11 +149,11 @@ def trade():
             g.session.add(order)
             g.session.commit()
             fill_order(order, g.session.query(Order).all())
-            return jsonify(True)
+            #return jsonify(True)
 
         if response == False:
             leg_message(payload)
-            return jsonify(False)
+            #return jsonify(False)
 
         # TODO: Be sure to return jsonify(True) or jsonify(False) depending on if the method was successful
         return jsonify(True)
@@ -167,7 +167,7 @@ def order_book():
             "buy_currency": order.buy_currency, "sell_currency": order.sell_currency, 
             "buy_amount": order.buy_amount, "sell_amount": order.sell_amount}
         list_orders.append(o)
-        
+
     return jsonify(data=list_orders)
 
 if __name__ == '__main__':
