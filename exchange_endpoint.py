@@ -154,7 +154,7 @@ def order_book():
     for order in orders:
         o = {"sender_pk": order.sender_pk, "receiver_pk": order.receiver_pk, 
             "buy_currency": order.buy_currency, "sell_currency": order.sell_currency, 
-            "buy_amount": order.buy_amount, "sell_amount": order.sell_amount}
+            "buy_amount": order.buy_amount, "sell_amount": order.sell_amount, "signature": order.signature}
         list_orders.append(o)
 
     return jsonify(data=list_orders)
