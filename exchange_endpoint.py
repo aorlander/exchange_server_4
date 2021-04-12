@@ -41,21 +41,18 @@ def check_sig(payload,sig):
             response = True
     return response
 
-def check_match(existing_order, order):
+def check_match(tx, order):
     if(order.filled==None):
-        if(existing_order.buy_currency == order.sell_currency):
-            if(existing_order.sell_currency == order.buy_currency):
-                if(existing_order.sell_amount / existing_order.buy_amount >= order.buy_amount/order.sell_amount):
+        if(tx.buy_currency == order.sell_currency):
+            if(tx.sell_currency == order.buy_currency):
+                if(tx.sell_amount / tx.buy_amount >= order.buy_amount/order.sell_amount):
                      return True
     return False
 
-def match_order(existing_order, order):  
-    if (existing_order.sell_amount < order.buy_amount):
-        #print("\n current: SELL " + str(order.sell_amount) + " " + order.sell_currency + " / BUY " + str(order.buy_amount) + " " + order.buy_currency)
-        remaining_buy_amt = order.buy_amount - existing_order.sell_amount
-        remaining_sell_amt = order.sell_amount - existing_order.buy_amount
-        derived_implied_fx=remaining_buy_amt/remaining_sell_amt
-        #print("\n order FX = " + str(parent_implied_fx)  + " // existing FX = " + str(existing_implied_fx) + " // derived FX = " + str(derived_implied_fx))
+def match_order(tx, order):  
+    if (tx.sell_amount < order.buy_amount):
+        remaining_buy_amt = order.buy_amount - tx.sell_amount
+        remaining_sell_amt = order.sell_amount - tx.buy_amount
         derived_order = Order (
             creator_id=order.id, 
             sender_pk=order.sender_pk,
@@ -68,13 +65,10 @@ def match_order(existing_order, order):
         derived_order.relationship = (derived_order.id, order.id)
         g.session.add(derived_order)
         g.session.commit()
-        existing_order.filled = order.timestamp 
+        tx.filled = order.timestamp 
         order.filled = order.timestamp
-        existing_order.counterparty_id = order.id
-        order.counterparty_id = existing_order.id
-        existing_implied_fx=existing_order.buy_amount/existing_order.sell_amount
-        parent_implied_fx= order.buy_amount/order.sell_amount
-        #print("created: SELL " + str(child_order.sell_amount) + " " + child_order.sell_currency + " / BUY " + str(child_order.buy_amount) + " " + child_order.buy_currency)
+        tx.counterparty_id = order.id
+        order.counterparty_id = tx.id
     return 0
 
 def fill_order(order,txes=[]):
@@ -123,7 +117,7 @@ def trade():
 
         # Add the order to the database and Fill the order
         # Return jsonify(True) or jsonify(False) depending on if the method was successful
-        if response == True:
+        if response == True:   # If the signature verifies, store remaining fields in order table.
             order = Order(sender_pk=content['payload']['sender_pk'] , 
                           receiver_pk=content['payload']['receiver_pk'], 
                           buy_currency=content['payload']['buy_currency'], 
@@ -134,7 +128,7 @@ def trade():
             g.session.commit()
             fill_order(order, g.session.query(Order).all())
             return jsonify(True)
-        if response == False:
+        if response == False:   # If the signature does not verify, insert a record into log table
             leg_message(json.dumps(content['payload']))
             return jsonify(False)
         
