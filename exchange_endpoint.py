@@ -149,14 +149,14 @@ def trade():
             g.session.add(order)
             g.session.commit()
             fill_order(order, g.session.query(Order).all())
-            return(jsonify(True))
-            
+            return jsonify(True)
+
         if response == False:
             leg_message(payload)
-            return(jsonify(False))
+            return jsonify(False)
 
         # TODO: Be sure to return jsonify(True) or jsonify(False) depending on if the method was successful
-        return(jsonify(True))
+        return jsonify(True)
 
 @app.route('/order_book')
 def order_book():
