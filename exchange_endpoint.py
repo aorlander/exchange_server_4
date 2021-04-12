@@ -36,12 +36,12 @@ def check_sig(payload,sig):
     platform = payload['platform']
     response = False
     if platform=='Ethereum':
-            eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
-            if eth_account.Account.recover_message(eth_encoded_msg,signature=sig) == s_pk:
-                response = True
-        if platform=='Algorand':
-            if algosdk.util.verify_bytes(payload.encode('utf-8'),sig,s_pk):
-                response = True
+        eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
+        if eth_account.Account.recover_message(eth_encoded_msg,signature=sig) == s_pk:
+            response = True
+    if platform=='Algorand':
+        if algosdk.util.verify_bytes(payload.encode('utf-8'),sig,s_pk):
+            response = True
     return response
 
 def check_match(existing_order, order):
