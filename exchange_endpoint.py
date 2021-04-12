@@ -125,8 +125,8 @@ def trade():
         #Note that you can access the database session using g.session
 
         # TODO: Check the signature
-        response = check_sig(json.dumps(content['payload']), content['sig'])
-
+        response = check_sig(content['payload'], content['sig'])
+        print(response)
         # TODO: Add the order to the database and Fill the order
         if response == True:
             order = Order(sender_pk=content['payload']['sender_pk'] , 
